@@ -166,7 +166,6 @@ def prepare_data(query, n):
             DOI=paper['DOI'])
     # add their references
     for id, paper in zip(ids_ref, papers_ref):
-        print(cm1)
         color = cm1[int(8*(1-paper['CC']/max_cit_ref))]
         G.add_node(
             id,
