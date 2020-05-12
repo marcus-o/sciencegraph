@@ -7,3 +7,5 @@ weekend project made up of the bokeh, mag, and azure manual, as well as stackexc
 
 feel free to use the code for whatever (acknowledge this repo if useful)
 absolutely no guarantees for function
+
+contact me at (marcus.ossiander at gmail)
