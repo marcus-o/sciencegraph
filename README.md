@@ -1,5 +1,5 @@
 # sciencegraph
-flask application that plots a graph of papers from microsoft knowledge graph
+flask application that plots a graph of papers from microsoft knowledge graph https://aka.ms/msracad
 
 runs at https://sciencegraph.azurewebsites.net/ on the smallest azure instance so dont expect speed
 
