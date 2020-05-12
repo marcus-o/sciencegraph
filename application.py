@@ -110,10 +110,10 @@ def prepare_data(query, n):
     max_cit = max([p['CC'] for p in papers])
     # create parallel array as this is the main identifier,
     # should make sure to retain ordering stays aligned along the script
-    ids = [e['Id'] for e in papers]
+    ids = [p['Id'] for p in papers]
     # extract all references
     rids = []
-    _ = [rids.extend(ridsl) for ridsl in [e['RId'] for e in papers if 'RId' in e.keys()]]
+    _ = [rids.extend(ridsl) for ridsl in [p['RId'] for p in papers if 'RId' in p.keys()]]
     # get rid of reference ids that are already in the primary request
     rids = [rid for rid in rids if rid not in ids]
 
@@ -123,9 +123,7 @@ def prepare_data(query, n):
     eval_data_ref = evaluate(expr_ref, n=1000)
     if eval_data_ref is not 0:
         # %% process secondary found papers
-        papers_ref = [
-            e for e in eval_data_ref['entities']]
-        ids_ref = [e['Id'] for e in papers_ref]
+        papers_ref = [e for e in eval_data_ref['entities']]
 
         # strip incomplete
         papers_ref = [p for p in papers_ref if 'DN' in p.keys()]
@@ -139,6 +137,8 @@ def prepare_data(query, n):
             if 'DOI' not in p.keys():
                 p['DOI'] = 'unknown'
         max_cit_ref = max([p['CC'] for p in papers_ref])
+        ids_ref = [p['Id'] for p in papers_ref]
+
 
         #rids_ref = []
         #_ = [rids_ref.extend(ridsl) for ridsl in [e['RId'] for e in papers_ref if 'RId' in e.keys()]]
@@ -178,13 +178,16 @@ def prepare_data(query, n):
             DOI=paper['DOI'])
 
     # add connections from primaries to references
-    for e in papers:
-        if 'RId' in e.keys():
-            G.add_edges_from([(e['Id'], rid) for rid in e['RId']])
+    for p in papers:
+        if 'RId' in p.keys():
+            # between primaries
+            G.add_edges_from([(p['Id'], rid) for rid in p['RId'] if rid in ids])
+            # between primaries and references
+            G.add_edges_from([(p['Id'], rid) for rid in p['RId'] if rid in ids_ref])
     # add connections between references
-    for e in papers_ref:
-        if 'RId' in e.keys():
-            G.add_edges_from([(e['Id'], rid) for rid in e['RId'] if rid in rids])
+    for p in papers_ref:
+        if 'RId' in p.keys():
+            G.add_edges_from([(p['Id'], rid) for rid in p['RId'] if rid in ids_ref])
     return G, exprs[0]
 
 
@@ -263,19 +266,22 @@ def draw_plot(G, query, expr):
         size=10, fill_color="color")
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_alpha=0.2)
-    line_alpha=0.8
 
     # selection
     graph_renderer.node_renderer.selection_glyph = Circle(
-        size=25, fill_color='#abdda4')
+        size=10, fill_color="color", fill_alpha=1, line_alpha=1)
     graph_renderer.edge_renderer.selection_glyph = MultiLine(
-        line_color='#abdda4', line_width=4)
+        line_width=3, line_alpha=1)
+    graph_renderer.node_renderer.nonselection_glyph = Circle(
+        size=10, fill_color="color", fill_alpha=0.5, line_alpha=0.5)
+    graph_renderer.edge_renderer.nonselection_glyph = MultiLine(
+        line_alpha=0.2)
 
     # hover
     graph_renderer.node_renderer.hover_glyph = Circle(
         size=25, fill_color='#abdda4')
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
-        line_color='#abdda4', line_width=4)
+        line_color='#abdda4', line_width=3)
 
     graph_renderer.inspection_policy = NodesAndLinkedEdges()
     graph_renderer.selection_policy = NodesAndLinkedEdges()
