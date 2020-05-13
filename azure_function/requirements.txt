@@ -1,0 +1,4 @@
+azure-functions
+bokeh==2.0.2
+Jinja2==2.11.2
+networkx==2.4

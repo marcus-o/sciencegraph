@@ -1,7 +1,8 @@
 # sciencegraph
 flask application that plots a graph of papers from microsoft knowledge graph https://aka.ms/msracad
 
-runs at https://sciencegraph.azurewebsites.net/ on the smallest azure instance so dont expect speed
+runs at http://sciencegraphf.azurewebsites.net/api/http_request as azure function
+as this is a toy project it uses the free quota for both https://aka.ms/msracad and microsoft azure which might deplete
 
 weekend project made up of the bokeh, mag, and azure manual, as well as stackexchange
 
