@@ -39,8 +39,6 @@ def interpret(query):
         'model': 'latest',
         'count': '100',
         'offset': '0',
-        'orderby': '',
-        'attributes': '',
         'query': query,
     })
 
@@ -56,7 +54,7 @@ def interpret(query):
         return(data_decoded)
     except Exception as e:
         print("[Errno {0}] {1}".format(e.errno, e.strerror))
-        return(0)
+        return(None)
 
 
 def evaluate(query, n=100):
@@ -82,18 +80,22 @@ def evaluate(query, n=100):
         return(data_decoded)
     except Exception as e:
         print("[Errno {0}] {1}".format(e.errno, e.strerror))
-        return(0)
+        return(None)
 
 
 def prepare_data(query, n):
     # %% convert the natural language request to a query
     interpret_data = interpret(query)
     # %% get the most likely query result
+    if 'interpretations' not in interpret_data.keys():
+        return 0, 0
     exprs = [
         e['rules'][0]['output']['value']
         for e in interpret_data['interpretations']
         if e['rules'][0]['output']['type'] == 'query']
     eval_data = evaluate(exprs[0], n=n)
+    if 'entities' not in eval_data.keys():
+        return 0, 0
     # %% process primary found papers
     papers = [e for e in eval_data['entities']]
     # strip incomplete
@@ -119,9 +121,8 @@ def prepare_data(query, n):
 
     # %% get the secondary found papers information
     expr_ref = "Or(Id=" + ",Id=".join([str(rdi) for rdi in rids]) + ")"
-    # print(expr_ref)
     eval_data_ref = evaluate(expr_ref, n=1000)
-    if eval_data_ref is not 0:
+    if eval_data_ref is not None:
         # %% process secondary found papers
         papers_ref = [e for e in eval_data_ref['entities']]
 
@@ -163,7 +164,8 @@ def prepare_data(query, n):
             authors=', '.join([a['AuN'] for a in paper['AA']]),
             journal=paper['J']['JN'],
             year=paper['Y'],
-            DOI=paper['DOI'])
+            DOI=paper['DOI'],
+            size=20)
     # add their references
     for id, paper in zip(ids_ref, papers_ref):
         color = cm1[int(8*(1-paper['CC']/max_cit_ref))]
@@ -175,7 +177,8 @@ def prepare_data(query, n):
             authors=', '.join([a['AuN'] for a in paper['AA']]),
             journal=paper['J']['JN'],
             year=paper['Y'],
-            DOI=paper['DOI'])
+            DOI=paper['DOI'],
+            size=10)
 
     # add connections from primaries to references
     for p in papers:
@@ -233,6 +236,7 @@ def draw_plot(G, query, expr):
     code = '''  if (cb_data.source.selected.indices.length > 0){
                     var selected_index = cb_data.source.selected.indices[0];
                     var tooltip = document.getElementById("showpaper");
+                    cb_data.source.data.color[selected_index] = 'grey'
                     tp = tp.replace('@type', cb_data.source.data.type[selected_index]);
                     tp = tp.replace('@title', cb_data.source.data.title[selected_index]);
                     tp = tp.replace('@authors', cb_data.source.data.authors[selected_index]);
@@ -259,27 +263,27 @@ def draw_plot(G, query, expr):
     plot.toolbar.active_scroll = zoom_tool
 
     graph_renderer = from_networkx(
-        G, nx.spring_layout, scale=1, center=(0, 0))
+        G, nx.spring_layout, scale=1, center=(0, 0), seed=12345)
 
     # normal
     graph_renderer.node_renderer.glyph = Circle(
-        size=10, fill_color="color")
+        size="size", fill_color="color")
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_alpha=0.2)
 
     # selection
     graph_renderer.node_renderer.selection_glyph = Circle(
-        size=10, fill_color="color", fill_alpha=1, line_alpha=1)
+        fill_color="color", fill_alpha=1, line_alpha=1)
     graph_renderer.edge_renderer.selection_glyph = MultiLine(
         line_width=3, line_alpha=1)
     graph_renderer.node_renderer.nonselection_glyph = Circle(
-        size=10, fill_color="color", fill_alpha=0.5, line_alpha=0.5)
+        fill_color="color", fill_alpha=0.5, line_alpha=0.5)
     graph_renderer.edge_renderer.nonselection_glyph = MultiLine(
         line_alpha=0.2)
 
     # hover
     graph_renderer.node_renderer.hover_glyph = Circle(
-        size=25, fill_color='#abdda4')
+        fill_color='#abdda4')
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
         line_color='#abdda4', line_width=3)
 
