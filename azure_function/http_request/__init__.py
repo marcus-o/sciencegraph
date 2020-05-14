@@ -28,7 +28,7 @@ import numpy as np
 t = Template("""
 <html style="height:100vh;">
     <head>
-            <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.0.2.min.js"
+        <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.0.2.min.js"
             crossorigin="anonymous"></script>
         <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.0.2.min.js"
             crossorigin="anonymous"></script>
@@ -390,25 +390,40 @@ def draw_plot(G, query, expr, type='publications'):
     plot.ygrid.grid_line_color = None
 
     # legend
+    plot.circle(
+        x=[-200000, ], y=[-200000, ],
+        fill_color='white', size=0, line_width=0,
+        legend_label='Visualization for "' + query + '"')
+    plot.circle(
+        x=[-200000, ], y=[-200000, ],
+        fill_color='white', size=0, line_width=0,
+        legend_label='created using Microsoft Academic Graph and')
+    plot.circle(
+        x=[-200000, ], y=[-200000, ],
+        fill_color='white', size=0, line_width=0,
+        legend_label='Sciencegraph by Marcus Ossiander, 2020')
+
     if type == 'publications':
         plot.circle(
-            x=[-2, ], y=[-2, ],
+            x=[-200000, ], y=[-200000, ],
             fill_color=cm2[3], size=20,
             legend_label='Publication, Color measures Citation Count')
         plot.circle(
-            x=[-2, ], y=[-2, ],
+            x=[-200000, ], y=[-200000, ],
             fill_color=cm1[3], size=10,
             legend_label='Reference, Color measures Citation Count')
     if type == 'authors':
         plot.circle(
-            x=[-2, ], y=[-2, ],
+            x=[-200000, ], y=[-200000, ],
             fill_color=cm2[3], size=15,
             legend_label='Publication, Color measures Citation Count')
         plot.circle(
-            x=[-2, ], y=[-2, ],
+            x=[-200000, ], y=[-200000, ],
             fill_color=cm1[3], size=10,
             legend_label='Co-Author, Color measures Collaboration')
-    plot.legend.title = 'Visualization for "' + query + '", created using Microsoft Academic Graph and Sciencegraph by Marcus Ossiander, 2020'
+    plot.legend.background_fill_alpha = 0
+    plot.legend.border_line_alpha = 0
+    plot.legend.location = 'top_left'
 
     # tools
     node_hover_tool = HoverTool(tooltips=tooltips)
